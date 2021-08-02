@@ -7,6 +7,11 @@ import { successResponse, transformOriginalName } from '../utils';
 
 const fileController = {
     upload: async (req: Request, res: Response, next: NextFunction) => {
+        console.log({
+            body: req.body,
+            file: req.file,
+        });
+
         try {
             if (!req.file) return CustomError.badRequest('Please select a valid file');
 
@@ -31,7 +36,10 @@ const fileController = {
 
             return successResponse(res, {
                 data: {
-                    file: { _id: savedFile.id, download_url: `${CLIENT_URL}/savedFile.id` },
+                    file: {
+                        _id: savedFile.id,
+                        download_url: `${CLIENT_URL}/download/${savedFile.id}`,
+                    },
                 },
                 toast: {
                     message: 'File uploaded successfully',
@@ -40,7 +48,7 @@ const fileController = {
             });
         } catch (error) {
             console.error(error);
-            return next(CustomError.serverError());
+            return next(CustomError.serverError(error.message));
         }
     },
 };

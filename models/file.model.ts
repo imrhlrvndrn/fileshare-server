@@ -17,7 +17,6 @@ interface IFileSchema extends Document {
     file_name: string;
     url: string;
     size: number; // in megs
-    type: string;
     format: string;
     sender?: string;
     receiver?: string;
