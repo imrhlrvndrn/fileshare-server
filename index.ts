@@ -10,7 +10,7 @@ import { fileRoutes } from './routes';
 
 // importing middlwares
 import { errorHandler } from './middlewares';
-import { Cloudinary } from './services/cloudinary';
+import { Cloudinary } from './services';
 
 Cloudinary.configure();
 dotenv.config();

@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
-import { CLIENT_URL } from '../config';
-import { File } from '../models';
-import { CustomError } from '../services';
-import { Cloudinary } from '../services/cloudinary';
-import { successResponse, transformOriginalName } from '../utils';
 import https from 'https';
+import { File } from '../models';
+import { CLIENT_URL } from '../config';
+import { CustomError, Cloudinary, Nodemailer } from '../services';
+import { Request, Response, NextFunction } from 'express';
+import { successResponse, transformOriginalName } from '../utils';
+import { generateFileShareTemplate } from '../templates/fileShare.template';
 
 const fileController = {
     upload: async (req: Request, res: Response, next: NextFunction) => {
@@ -70,7 +70,63 @@ const fileController = {
             const returnedFile = await File.findById(fileId);
             if (!returnedFile) return next(CustomError.notFound(`File doesn't exist`));
 
-            https.get(returnedFile.url, (fileStream) => fileStream.pipe(res));
+            https.get(returnedFile.url, (fileStream) => {
+                console.log('File stream => ', fileStream);
+                console.log('Piped file stream => ', fileStream.pipe(res));
+                return fileStream.pipe(res);
+            });
+        } catch (error) {
+            console.error(error);
+            return next(CustomError.serverError());
+        }
+    },
+    shareViaEmail: async (req: Request, res: Response, next: NextFunction) => {
+        const { emailFrom, emailTo, fileId } = req.body;
+
+        try {
+            const returnedFile = await File.findById(fileId);
+            if (!returnedFile)
+                return next(
+                    CustomError.notFound(`File doesn't exist. Please reupload and try again`)
+                );
+
+            const transporter = Nodemailer.createTransporter();
+
+            const { file_name, size } = returnedFile;
+
+            const fileSize = `${(size / 1000000).toFixed(2)}`;
+            const downloadUrl = `${CLIENT_URL}/download/${fileId}`;
+
+            const mailOptions = {
+                from: emailFrom,
+                to: emailTo,
+                subject: `FileShare | ${emailFrom} Shared a file with you`,
+                text: `This file was shared using FileShare`,
+                html: generateFileShareTemplate({
+                    emailFrom,
+                    emailTo,
+                    downloadUrl,
+                    fileName: file_name,
+                    fileSize,
+                }),
+            };
+
+            const messageId = await Nodemailer.sendEmail(transporter, mailOptions);
+            if (!messageId)
+                return next(
+                    CustomError.serverError(`Couldn't send the file via email. Please try again`)
+                );
+
+            returnedFile.sender = emailFrom;
+            returnedFile.receiver = emailTo;
+
+            await returnedFile.save();
+
+            return successResponse(res, {
+                data: {
+                    message: 'File shared via email',
+                },
+            });
         } catch (error) {
             console.error(error);
             return next(CustomError.serverError());
