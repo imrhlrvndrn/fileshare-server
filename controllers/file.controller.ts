@@ -4,6 +4,7 @@ import { File } from '../models';
 import { CustomError } from '../services';
 import { Cloudinary } from '../services/cloudinary';
 import { successResponse, transformOriginalName } from '../utils';
+import https from 'https';
 
 const fileController = {
     upload: async (req: Request, res: Response, next: NextFunction) => {
@@ -16,12 +17,10 @@ const fileController = {
             if (!req.file) return CustomError.badRequest('Please select a valid file');
 
             let uploadedFile = await Cloudinary.upload(req, next);
-
             if (!uploadedFile) return CustomError.badRequest('Please select a valid file');
+
             const { originalname: original_name } = req.file;
             const { secure_url, format, bytes } = uploadedFile;
-
-            transformOriginalName(original_name);
 
             const newFile = new File({
                 file_name: `${transformOriginalName(original_name)}`,
@@ -29,8 +28,6 @@ const fileController = {
                 format,
                 size: bytes,
             });
-
-            console.log('New generated file => ', newFile);
 
             const savedFile = await newFile.save();
 
@@ -49,6 +46,34 @@ const fileController = {
         } catch (error) {
             console.error(error);
             return next(CustomError.serverError(error.message));
+        }
+    },
+    getFileById: async (req: Request, res: Response, next: NextFunction) => {
+        const { fileId } = req.params;
+        try {
+            const returnedFile = await File.findById(fileId);
+            if (!returnedFile) return next(CustomError.notFound(`File doesn't exist`));
+
+            return successResponse(res, {
+                data: {
+                    file: returnedFile,
+                },
+            });
+        } catch (error) {
+            console.error(error);
+            return next(CustomError.serverError());
+        }
+    },
+    downloadFileById: async (req: Request, res: Response, next: NextFunction) => {
+        const { fileId } = req.params;
+        try {
+            const returnedFile = await File.findById(fileId);
+            if (!returnedFile) return next(CustomError.notFound(`File doesn't exist`));
+
+            https.get(returnedFile.url, (fileStream) => fileStream.pipe(res));
+        } catch (error) {
+            console.error(error);
+            return next(CustomError.serverError());
         }
     },
 };
