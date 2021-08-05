@@ -45,7 +45,7 @@ const fileController = {
             });
         } catch (error) {
             console.error(error);
-            return next(CustomError.serverError(error.message));
+            return next(error);
         }
     },
     getFileById: async (req: Request, res: Response, next: NextFunction) => {
@@ -61,7 +61,7 @@ const fileController = {
             });
         } catch (error) {
             console.error(error);
-            return next(CustomError.serverError());
+            return next(error);
         }
     },
     downloadFileById: async (req: Request, res: Response, next: NextFunction) => {
@@ -70,14 +70,10 @@ const fileController = {
             const returnedFile = await File.findById(fileId);
             if (!returnedFile) return next(CustomError.notFound(`File doesn't exist`));
 
-            https.get(returnedFile.url, (fileStream) => {
-                console.log('File stream => ', fileStream);
-                console.log('Piped file stream => ', fileStream.pipe(res));
-                return fileStream.pipe(res);
-            });
+            https.get(returnedFile.url, (fileStream) => fileStream.pipe(res));
         } catch (error) {
             console.error(error);
-            return next(CustomError.serverError());
+            return next(error);
         }
     },
     shareViaEmail: async (req: Request, res: Response, next: NextFunction) => {
@@ -129,7 +125,7 @@ const fileController = {
             });
         } catch (error) {
             console.error(error);
-            return next(CustomError.serverError());
+            return next(error);
         }
     },
 };
