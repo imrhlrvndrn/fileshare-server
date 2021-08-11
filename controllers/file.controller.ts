@@ -8,11 +8,6 @@ import { generateFileShareTemplate } from '../templates/fileShare.template';
 
 const fileController = {
     upload: async (req: Request, res: Response, next: NextFunction) => {
-        console.log({
-            body: req.body,
-            file: req.file,
-        });
-
         try {
             if (!req.file) return CustomError.badRequest('Please select a valid file');
 
@@ -110,7 +105,9 @@ const fileController = {
             const messageId = await Nodemailer.sendEmail(transporter, mailOptions);
             if (!messageId)
                 return next(
-                    CustomError.serverError(`Couldn't send the file via email. Please try again`)
+                    CustomError.serverError(
+                        `Couldn't send the file via email. Please check email & try again`
+                    )
                 );
 
             returnedFile.sender = emailFrom;
@@ -120,7 +117,7 @@ const fileController = {
 
             return successResponse(res, {
                 data: {
-                    message: 'File shared via email',
+                    message: `File share to ${emailTo} was successful`,
                 },
             });
         } catch (error) {

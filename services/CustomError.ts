@@ -20,16 +20,16 @@ class CustomError extends Error {
         return new CustomError(401, status, errorMessage);
     }
 
-    static unAuthorized(errorMessage = `Unauthorized. Access denied`) {
-        return new CustomError(401, 'failed', errorMessage);
+    static unAuthorized(errorMessage = `Unauthorized. Access denied`, status = 'failed') {
+        return new CustomError(401, status, errorMessage);
     }
 
-    static badRequest(errorMessage = `Bad Request`) {
-        return new CustomError(400, 'failed', errorMessage);
+    static badRequest(errorMessage = `Bad Request`, status = 'failed') {
+        return new CustomError(400, status, errorMessage);
     }
 
-    static serverError(errorMessage = `Internal server error`) {
-        return new CustomError(500, 'failed', errorMessage);
+    static serverError(errorMessage = `Internal server error`, status = 'failed') {
+        return new CustomError(500, status, errorMessage);
     }
 }
 

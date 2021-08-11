@@ -6,8 +6,7 @@
     "scripts": {
         "dev": "ts-node-dev --clear index.ts",
         "build": "tsc",
-        "start": "node ./dist/index.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "start": "node ./dist/index.js"
     },
     "keywords": [],
     "author": "Rahul Ravinran",

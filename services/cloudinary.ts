@@ -1,6 +1,11 @@
 import { NextFunction, Request } from 'express';
 import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
-import { CLOUDINARY_API_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '../config';
+import {
+    CLOUDINARY_API_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+    CLOUDINARY_API_FOLDER,
+} from '../config';
 import CustomError from './CustomError';
 
 export const Cloudinary = {
@@ -13,18 +18,19 @@ export const Cloudinary = {
     },
     upload: async (req: Request, next: NextFunction) => {
         if (!req.file) return next(CustomError.badRequest(`Please select a valid file`));
+        const folder = CLOUDINARY_API_FOLDER || 'fileShare';
 
         let uploadedFile: UploadApiResponse;
         try {
             uploadedFile = await cloudinary.uploader.upload(req.file.path, {
-                folder: 'fileShare',
+                folder,
                 resource_type: 'auto',
             });
 
             return uploadedFile;
         } catch (error) {
             console.error(error);
-            return next(CustomError.serverError(`File couldn't be uploaded. Please try again`));
+            return next(error);
         }
     },
 };
