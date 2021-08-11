@@ -16,14 +16,18 @@ Cloudinary.configure();
 dotenv.config();
 const app = express();
 
-connectDB();
+(async () => {
+    await connectDB();
+})();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // routes
 app.use('/api/files', fileRoutes);
-
+app.use('*', (req, res) => {
+    res.status(404).json({ message: 'Route not found' }).end();
+});
 // error handling
 app.use(errorHandler);
 

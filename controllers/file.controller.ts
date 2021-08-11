@@ -1,8 +1,8 @@
-import https from 'https';
 import { File } from '../models';
+import https from 'https';
 import { CLIENT_URL } from '../config';
-import { CustomError, Cloudinary, Nodemailer } from '../services';
 import { Request, Response, NextFunction } from 'express';
+import { CustomError, Cloudinary, Nodemailer } from '../services';
 import { successResponse, transformOriginalName } from '../utils';
 import { generateFileShareTemplate } from '../templates/fileShare.template';
 

@@ -18,12 +18,12 @@ export const Cloudinary = {
     },
     upload: async (req: Request, next: NextFunction) => {
         if (!req.file) return next(CustomError.badRequest(`Please select a valid file`));
-        const folder = CLOUDINARY_API_FOLDER || 'fileShare';
 
         let uploadedFile: UploadApiResponse;
+        console.log('Folder name => ', CLOUDINARY_API_FOLDER);
         try {
             uploadedFile = await cloudinary.uploader.upload(req.file.path, {
-                folder,
+                folder: `${CLOUDINARY_API_FOLDER}`,
                 resource_type: 'auto',
             });
 
